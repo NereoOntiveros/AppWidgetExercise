@@ -8,17 +8,19 @@ import android.content.Intent;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
+import java.util.ArrayList;
+
 /**
  * Implementation of App Widget functionality.
  */
 public class NewAppWidget extends AppWidgetProvider {
 
-
+    static ArrayList<String> listaPalabras = new ArrayList<>();
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 
-
+        /*
         //update each of the app widgets with the remote adapter
         for (int appWidgetId : appWidgetIds) {
 
@@ -52,21 +54,40 @@ public class NewAppWidget extends AppWidgetProvider {
             appWidgetManager.updateAppWidget(appWidgetId, rv);
 
         }
-        super.onUpdate(context,appWidgetManager,appWidgetIds);
+        super.onUpdate(context,appWidgetManager,appWidgetIds);*/
+    }
+
+    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId){
+        RemoteViews views = new RemoteViews(context.getPackageName(),R.layout.new_app_widget);
+
+        Intent intent = new Intent(context,ListWidgetService.class);
+        views.setRemoteAdapter(R.id.list_view,intent);
+
+        appWidgetManager.updateAppWidget(appWidgetId,views);
+    }
+
+    public static void updateWidgets (Context context,AppWidgetManager appWidgetManager,int[]appWidgetIds){
+        for(int appWidgetId:appWidgetIds){
+            updateAppWidget(context,appWidgetManager,appWidgetId);
+        }
     }
 
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        super.onReceive(context, intent);
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context,NewAppWidget.class));
 
         final String action = intent.getAction();
 
         if(action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)){
-            //refresh all widgets
 
-            onUpdate(context,AppWidgetManager.getInstance(context),AppWidgetManager.getInstance(context).getAppWidgetIds(new ComponentName(context,NewAppWidget.class)));
-        }super.onReceive(context, intent);
+            listaPalabras = intent.getExtras().getStringArrayList("palabras");
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds,R.id.list_view);
+            //refresh all widgets
+            NewAppWidget.updateWidgets(context,appWidgetManager,appWidgetIds);
+            super.onReceive(context, intent);
+        }
     }
 }
 
