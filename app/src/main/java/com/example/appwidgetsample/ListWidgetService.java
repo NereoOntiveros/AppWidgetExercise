@@ -28,6 +28,7 @@ public class ListWidgetService extends RemoteViewsService {
 
         @Override
         public void onCreate() {
+            remoteViewPalabrasList = listaPalabras;
         }
 
         @Override
